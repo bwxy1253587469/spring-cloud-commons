@@ -16,10 +16,6 @@
 
 package org.springframework.cloud.client.loadbalancer;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -32,6 +28,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Auto configuration for Ribbon (client side load balancing).
@@ -47,6 +47,7 @@ import org.springframework.web.client.RestTemplate;
 @EnableConfigurationProperties(LoadBalancerRetryProperties.class)
 public class LoadBalancerAutoConfiguration {
 
+	// 自动注入应用定义的bean
 	@LoadBalanced
 	@Autowired(required = false)
 	private List<RestTemplate> restTemplates = Collections.emptyList();
@@ -54,6 +55,8 @@ public class LoadBalancerAutoConfiguration {
 	@Bean
 	public SmartInitializingSingleton loadBalancedRestTemplateInitializer(
 			final List<RestTemplateCustomizer> customizers) {
+		// https://blog.csdn.net/bb23417274/article/details/89448214
+		// bean实例化完成后 执行方法
 		return new SmartInitializingSingleton() {
 			@Override
 			public void afterSingletonsInstantiated() {
@@ -83,6 +86,7 @@ public class LoadBalancerAutoConfiguration {
 		public LoadBalancerInterceptor ribbonInterceptor(
 				LoadBalancerClient loadBalancerClient,
 				LoadBalancerRequestFactory requestFactory) {
+			// 创建一个拦截器
 			return new LoadBalancerInterceptor(loadBalancerClient, requestFactory);
 		}
 
@@ -90,6 +94,7 @@ public class LoadBalancerAutoConfiguration {
 		@ConditionalOnMissingBean
 		public RestTemplateCustomizer restTemplateCustomizer(
 				final LoadBalancerInterceptor loadBalancerInterceptor) {
+			// 将拦截器加入到restTemplate中
 			return new RestTemplateCustomizer() {
 				@Override
 				public void customize(RestTemplate restTemplate) {
